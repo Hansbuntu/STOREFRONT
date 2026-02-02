@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "rootDir": "./backend/src",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node", "jest"],
+    "lib": ["ES2020", "DOM"]
+  },
+  "include": ["backend/src/**/*", "config/**/*", "docs/openapi/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+
+
