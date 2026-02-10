@@ -3,11 +3,36 @@
 @tailwind utilities;
 
 body {
-  @apply bg-slate-950 text-slate-50 antialiased;
+  @apply bg-gray-50 text-gray-900 antialiased;
+  overflow-x: hidden;
 }
 
 a {
-  @apply text-brand-400 hover:text-brand-300;
+  @apply text-blue-600 hover:text-blue-700;
 }
 
+* {
+  min-width: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+html {
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 18px;
+  }
+}
 

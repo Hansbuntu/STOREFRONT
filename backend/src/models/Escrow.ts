@@ -8,11 +8,7 @@ import {
 import { sequelize } from "../startup/db";
 import { Order } from "./Order";
 
-export type EscrowReleaseStatus =
-  | "HELD"
-  | "RELEASED_TO_SELLER"
-  | "REFUNDED_TO_BUYER"
-  | "DISPUTED";
+export type EscrowReleaseStatus = "held" | "released" | "refunded";
 
 export class Escrow
   extends Model<InferAttributes<Escrow>, InferCreationAttributes<Escrow>>
@@ -24,9 +20,9 @@ export class Escrow
   declare heldAt: Date;
   declare releasedAt: Date | null;
   declare releasedTo: "seller" | "buyer" | null;
-  declare releaseStatus: EscrowReleaseStatus;
-  declare platformFee: number | null;
-  declare ledgerReference: number | null;
+  declare status: EscrowReleaseStatus;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
 Escrow.init(
@@ -66,26 +62,23 @@ Escrow.init(
       allowNull: true,
       field: "released_to",
     },
-    releaseStatus: {
-      type: DataTypes.ENUM(
-        "HELD",
-        "RELEASED_TO_SELLER",
-        "REFUNDED_TO_BUYER",
-        "DISPUTED"
-      ),
+    status: {
+      type: DataTypes.ENUM("held", "released", "refunded"),
       allowNull: false,
-      defaultValue: "HELD",
-      field: "release_status",
+      defaultValue: "held",
+      field: "status",
     },
-    platformFee: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-      field: "platform_fee",
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+      field: "created_at",
     },
-    ledgerReference: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: "ledger_reference",
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+      field: "updated_at",
     },
   },
   {
@@ -97,5 +90,3 @@ Escrow.init(
 
 Order.hasOne(Escrow, { foreignKey: "orderId", as: "escrow" });
 Escrow.belongsTo(Order, { foreignKey: "orderId", as: "order" });
-
-

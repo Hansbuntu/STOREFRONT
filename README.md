@@ -74,24 +74,90 @@ VITE v6.x ready in XXX ms
 
 Open `http://localhost:5173/` in your browser to view the STOREFRONT UI.
 
+**Frontend Design**: The UI is designed in a classic eBay-style marketplace format:
+- Light background with clean, scannable listings
+- Category sidebar (collapses to dropdown on mobile)
+- List/Grid view toggle
+- Seller ratings and feedback prominently displayed
+- Search functionality
+- Escrow protection badges
+- Seller profile pages with feedback breakdown
+
 ### Environment configuration
 
-- Backend environment variables are read via `dotenv` (see `config/database.js` and `backend/src/startup/db.ts`).
-- For local development, defaults are baked in:
-  - DB host: `localhost`
-  - DB name: `storefront`
-  - DB user/password: `storefront` / `storefront`
-  - Redis URL: `redis://localhost:6379`
-  - Backend port: `3000`
-  - CORS origin: `http://localhost:5173`
-- A sample frontend env file is provided at:
-  - `frontend/env.example` (copy to `frontend/.env` and adjust as needed)
+**Backend** (create `.env` in repo root):
 
-Example `frontend/.env`:
+```bash
+JWT_SECRET=change_me
+JWT_EXPIRES_IN=1h
+ADMIN_EMAIL=admin@example.com
+CORS_ORIGIN=http://localhost:5173
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=storefront
+DB_PASSWORD=storefront
+DB_NAME=storefront
+REDIS_HOST=localhost
+REDIS_PORT=6379
+PORT=3000
+DEMO_MODE=true
+```
+
+**Frontend** (copy `frontend/env.example` to `frontend/.env`):
 
 ```bash
 VITE_API_URL=http://localhost:3000
+VITE_DEMO_MODE=false
 ```
+
+### API endpoints (auth module)
+
+**POST /auth/register**
+- Body: `{ pseudonym: string, email?: string, password: string }`
+- Returns: `{ token: string, user: User }`
+
+**POST /auth/login**
+- Body: `{ emailOrPseudonym: string, password: string }`
+- Returns: `{ token: string, user: User }`
+
+**GET /auth/me**
+- Headers: `Authorization: Bearer <token>`
+- Returns: `{ user: User }`
+
+**Admin promotion**: If a user registers or logs in with an email matching `ADMIN_EMAIL` (case-insensitive), their role is automatically set/promoted to `"admin"`.
+
+### Frontend features
+
+- ✅ **Auth integration**: Login/Register pages wired to backend API
+- ✅ **Auth context**: Global auth state with token management
+- ✅ **Protected routes**: Seller and Admin dashboards require authentication + role checks
+- ✅ **Dynamic header**: Shows user pseudonym, role badges, and logout when authenticated
+- ✅ **Auto-redirect**: Logged-in users redirected from login/register pages
+- ✅ **Error handling**: Form validation and API error display
+
+### Testing auth flow
+
+1. **Register a new user**:
+   ```bash
+   curl -X POST http://localhost:3000/auth/register \
+     -H "Content-Type: application/json" \
+     -d '{"pseudonym":"testuser","email":"user@example.com","password":"password123"}'
+   ```
+
+2. **Login**:
+   ```bash
+   curl -X POST http://localhost:3000/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"emailOrPseudonym":"user@example.com","password":"password123"}'
+   ```
+
+3. **Get current user** (replace `<TOKEN>` with token from login/register):
+   ```bash
+   curl http://localhost:3000/auth/me \
+     -H "Authorization: Bearer <TOKEN>"
+   ```
+
+Or use the frontend UI at `http://localhost:5173/register` and `http://localhost:5173/login`.
 
 ### New files added for ops
 
@@ -101,4 +167,38 @@ VITE_API_URL=http://localhost:3000
 
 These provide a clean baseline so you can run both servers and the database locally with the commands above.
 
+### Demo mode guardrails
 
+Demo-only endpoints (like `POST /demo/checkout`) are blocked unless `DEMO_MODE=true`.
+If `DEMO_MODE` is not set to `true`, demo endpoints return `403` with
+`"Demo mode disabled"`.
+
+### Deploy (Production)
+
+1. **Deploy backend (Render/Railway/etc.)**
+   - Provision Postgres + Redis.
+   - Set environment variables:
+     - `NODE_ENV=production`
+     - `JWT_SECRET=<strong secret>`
+     - `CORS_ORIGIN=https://your-frontend-domain`
+     - `DEMO_MODE=false`
+     - `UPLOAD_DIR=/var/data/uploads` (use a persistent disk)
+     - DB + Redis connection settings
+   - Run migrations:
+     ```bash
+     npx sequelize-cli db:migrate
+     ```
+
+2. **Deploy frontend (Vercel)**
+   - Set environment variables:
+     - `VITE_API_URL=https://your-backend-domain`
+     - `VITE_DEMO_MODE=false`
+
+3. **Create an admin user**
+   - Once a user registers:
+     ```sql
+     UPDATE users SET role='admin' WHERE email='admin@example.com';
+     ```
+
+**Uploads note:** Local disk uploads require a persistent disk. On Render,
+attach a disk or use object storage if you need durable uploads.

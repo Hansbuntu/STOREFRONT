@@ -17,6 +17,18 @@ export class User
   declare role: UserRole;
   declare pseudonym: string;
   declare email: string | null;
+  declare emailVerified: boolean;
+  declare emailVerificationTokenHash: string | null;
+  declare emailVerificationExpiresAt: Date | null;
+  declare googleId: string | null;
+  declare authProvider: "local";
+  declare phone: string | null;
+  declare phoneVerified: boolean;
+  declare phoneOtpHash: string | null;
+  declare phoneOtpExpiresAt: Date | null;
+  declare phoneOtpLastSentAt: Date | null;
+  declare phoneOtpAttempts: number;
+  declare phoneOtpLockedUntil: Date | null;
   declare passwordHash: string;
   declare kycStatus: "unverified" | "pending" | "verified" | "rejected";
   declare kycDocuments: string | null; // encrypted JSON
@@ -46,6 +58,71 @@ User.init(
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
+    },
+    emailVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: "email_verified",
+    },
+    emailVerificationTokenHash: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "email_verification_token_hash",
+    },
+    emailVerificationExpiresAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: "email_verification_expires_at",
+    },
+    googleId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      field: "google_id",
+    },
+    authProvider: {
+      type: DataTypes.ENUM("local"),
+      allowNull: false,
+      defaultValue: "local",
+      field: "auth_provider",
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+    },
+    phoneVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: "phone_verified",
+    },
+    phoneOtpHash: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "phone_otp_hash",
+    },
+    phoneOtpExpiresAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: "phone_otp_expires_at",
+    },
+    phoneOtpLastSentAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: "phone_otp_last_sent_at",
+    },
+    phoneOtpAttempts: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      field: "phone_otp_attempts",
+    },
+    phoneOtpLockedUntil: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: "phone_otp_locked_until",
     },
     passwordHash: {
       type: DataTypes.STRING,
@@ -109,7 +186,7 @@ User.init(
     sequelize,
     modelName: "User",
     tableName: "users",
+    // created_at/updated_at are managed by migration defaults
+    timestamps: false,
   }
 );
-
-

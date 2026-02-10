@@ -8,3 +8,6 @@ dist/
 build/
 coverage/
 *.log
+backend/uploads/
+frontend/dist/
+**/.DS_Store

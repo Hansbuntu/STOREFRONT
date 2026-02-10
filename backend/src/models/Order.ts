@@ -10,14 +10,12 @@ import { User } from "./User";
 import { Listing } from "./Listing";
 
 export type OrderStatus =
-  | "NEW"
-  | "PAID"
-  | "FULFILLMENT_SUBMITTED"
-  | "AWAITING_CONFIRMATION"
-  | "RELEASED"
-  | "REFUNDED"
-  | "DISPUTE"
-  | "RESOLVED";
+  | "new"
+  | "paid_demo"
+  | "fulfillment_submitted"
+  | "released"
+  | "refunded"
+  | "disputed";
 
 export class Order
   extends Model<InferAttributes<Order>, InferCreationAttributes<Order>>
@@ -26,10 +24,11 @@ export class Order
   declare buyerId: number;
   declare sellerId: number;
   declare listingSnapshot: any;
-  declare amount: number;
+  declare subtotalGhs: number;
+  declare shippingGhs: number;
+  declare totalGhs: number;
   declare currency: string;
   declare status: OrderStatus;
-  declare escrowId: number | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -56,9 +55,21 @@ Order.init(
       allowNull: false,
       field: "listing_snapshot",
     },
-    amount: {
+    subtotalGhs: {
       type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
+      field: "subtotal_ghs",
+    },
+    shippingGhs: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+      field: "shipping_ghs",
+    },
+    totalGhs: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      field: "total_ghs",
     },
     currency: {
       type: DataTypes.STRING(8),
@@ -67,22 +78,15 @@ Order.init(
     },
     status: {
       type: DataTypes.ENUM(
-        "NEW",
-        "PAID",
-        "FULFILLMENT_SUBMITTED",
-        "AWAITING_CONFIRMATION",
-        "RELEASED",
-        "REFUNDED",
-        "DISPUTE",
-        "RESOLVED"
+        "new",
+        "paid_demo",
+        "fulfillment_submitted",
+        "released",
+        "refunded",
+        "disputed"
       ),
       allowNull: false,
-      defaultValue: "NEW",
-    },
-    escrowId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      field: "escrow_id",
+      defaultValue: "new",
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -110,5 +114,4 @@ Order.belongsTo(User, { foreignKey: "buyerId", as: "buyer" });
 Order.belongsTo(User, { foreignKey: "sellerId", as: "seller" });
 
 Listing.hasMany(Order, { foreignKey: "sellerId", sourceKey: "sellerId" });
-
 
